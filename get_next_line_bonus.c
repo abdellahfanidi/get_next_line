@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: afanidi <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/17 16:59:04 by afanidi           #+#    #+#             */
-/*   Updated: 2023/11/17 18:09:13 by afanidi          ###   ########.fr       */
+/*   Created: 2023/11/17 18:43:15 by afanidi           #+#    #+#             */
+/*   Updated: 2023/11/17 19:14:23 by afanidi          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 char	*line_after_new_line(char *res, int len)
 {
@@ -76,7 +76,7 @@ char	*help_fun(int fd, ssize_t *bytes, char **reserve)
 {
 	char	*buff;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || fd >= 1024 || BUFFER_SIZE <= 0)
 		return (0);
 	buff = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buff)
@@ -98,28 +98,28 @@ char	*help_fun(int fd, ssize_t *bytes, char **reserve)
 
 char	*get_next_line(int fd)
 {
-	static char	*reserve;
+	static char	*reserve[1024];
 	char		*buff;
 	ssize_t		res;
 
 	res = 1;
 	while (res > 0)
 	{
-		buff = help_fun(fd, &res, &reserve);
+		buff = help_fun(fd, &res, &reserve[fd]);
 		if (!buff)
 			return (NULL);
 		if (res == 0)
 		{
 			free(buff);
-			if (reserve && check_new_line(reserve) > -1)
-				return (line_before(&reserve, check_new_line(reserve)));
+			if (reserve[fd] && check_new_line(reserve[fd]) > -1)
+				return (line_before(&reserve[fd], check_new_line(reserve[fd])));
 			break ;
 		}
 		buff[res] = '\0';
-		reserve = ft_strjoin(reserve, buff);
+		reserve[fd] = ft_strjoin(reserve[fd], buff);
 		free(buff);
-		if (check_new_line(reserve) > -1)
-			return (line_before(&reserve, check_new_line(reserve)));
+		if (check_new_line(reserve[fd]) > -1)
+			return (line_before(&reserve[fd], check_new_line(reserve[fd])));
 	}
-	return (get_last_line(&reserve));
+	return (get_last_line(&reserve[fd]));
 }
